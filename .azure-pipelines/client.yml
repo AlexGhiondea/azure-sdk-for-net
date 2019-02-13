@@ -39,7 +39,18 @@ jobs:
           version: 2.1.503
 
       - task: DotNetCoreCLI@2
-        displayName: 'Build & Test'
+        displayName: 'Build & Test (no live tests)'
+        condition: eq(variables['System.TeamProject'], 'public')
+        inputs:
+          command: test
+          projects: '$(ProjectFile)'
+          arguments: --filter TestCategory!=Live
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Build & Test (with live tests)'
+        condition: ne(variables['System.TeamProject'], 'public')
+        env:
+          AZ_CONFIG_CONNECTION: $(AzConfigConnectionString)
         inputs:
           command: test
           projects: '$(ProjectFile)'
