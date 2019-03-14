@@ -18,7 +18,7 @@ For a full list of packages built from this repository, please see our [list of 
 * .NET Framework 4.5.2
 * Netstandard 1.4
 
-## Contributing
+## Contributing 
 
 ### Prerequisites:
   Install VS 2017 (Professional or higher) and make sure you have the latest updates (https://www.visualstudio.com/).
