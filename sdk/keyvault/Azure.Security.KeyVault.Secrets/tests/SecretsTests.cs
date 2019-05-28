@@ -12,11 +12,6 @@ namespace Azure.Security.KeyVault.Test
 {
     public class SecretTests : KeyVaultTestBase
     {
-        //private static string s_tenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47";
-        //private static string s_clientId = "20b5a4f5-a68a-4ee3-b6d9-7d153e2899df";
-        //private static string s_clientSecret = "1:[a@RS]R9sy1OfzcJ8oCJO6j+GMoX9[";
-
-
         static void Main(string[] args)
         {
 
