@@ -2,16 +2,36 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
-    public struct SignResult 
+    public struct SignResult : IJsonDeserializable
     {
+        private const string KeyIdPropertyName = "kid";
+        private const string SignaturePropertyName = "value";
+
         public string KeyId { get; private set; }
 
         public byte[] Signature { get; private set; }
 
-        public SignatureAlgorithm Algorithm { get; private set; }
+        public SignatureAlgorithm Algorithm { get; internal set; }
+
+        void IJsonDeserializable.ReadProperties(JsonElement json)
+        {
+            foreach (JsonProperty prop in json.EnumerateObject())
+            {
+                switch (prop.Name)
+                {
+                    case KeyIdPropertyName:
+                        KeyId = prop.Value.GetString();
+                        break;
+                    case SignaturePropertyName:
+                        Signature = Base64Url.Decode(prop.Value.GetString());
+                        break;
+                }
+            }
+        }
     }
 }

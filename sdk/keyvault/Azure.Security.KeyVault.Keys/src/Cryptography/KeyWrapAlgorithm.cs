@@ -6,12 +6,28 @@ using System.Threading.Tasks;
 
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
-    public class KeyWrapAlgorithm
+    public enum KeyWrapAlgorithm
     {
-        public static KeyWrapAlgorithm RSAOAEP { get; }
+        RSAOAEP,
+        RSA15,
+        RSAOAEP256
+    }
 
-        public static KeyWrapAlgorithm RSA15 { get; }
-
-        public static KeyWrapAlgorithm RSAOAEP256 { get; }
+    internal static class KeyWrapAlgorithmExtensions
+    {
+        public static string GetName(this KeyWrapAlgorithm algorithm)
+        {
+            switch (algorithm)
+            {
+                case KeyWrapAlgorithm.RSAOAEP:
+                    return "RSA-OAEP";
+                case KeyWrapAlgorithm.RSA15:
+                    return "RSA1_5";
+                case KeyWrapAlgorithm.RSAOAEP256:
+                    return "RSA-OAEP-256";
+                default:
+                    return null;
+            }
+        }
     }
 }

@@ -1017,12 +1017,12 @@ namespace Azure.Security.KeyVault.Keys
             }
         }
 
-        public virtual async Task<CryptographyClient> GetCryptographyClientAysnc(string keyName, CancellationToken cancellationToken = default)
+        public virtual async Task<CryptographicClient> GetCryptographyClientAysnc(string keyName, CancellationToken cancellationToken = default)
         {
 
         }
 
-        public virtual CryptographyClient GetCryptographyClient(string keyName, CancellationToken cancellationToken = default)
+        public virtual CryptographicClient GetCryptographyClient(string keyName, CancellationToken cancellationToken = default)
         {
 
         }
