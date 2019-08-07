@@ -82,8 +82,8 @@ namespace Azure.Storage.Blobs.Test
             // Arrange
             var service = this.InstrumentClient(
                 new BlobServiceClient(
-                    new Uri(TestConfigurations.DefaultTargetTenant.BlobServiceEndpoint),
-                    new StorageSharedKeyCredential(TestConfigurations.DefaultTargetTenant.AccountName, TestConfigurations.DefaultTargetTenant.AccountKey),
+                    new Uri(this.TestConfigDefault.BlobServiceEndpoint),
+                    new StorageSharedKeyCredential(this.TestConfigDefault.AccountName, this.TestConfigDefault.AccountKey),
                     this.GetFaultyBlobConnectionOptions(
                         raiseAt: 256 * Constants.KB,
                         raise: new Exception("Unexpected"))));
@@ -517,7 +517,7 @@ namespace Azure.Storage.Blobs.Test
                         await destBlob.UploadAsync(stream);
                     }
 
-                    var duration = -1;
+                    var duration = Constants.Blob.Lease.InfiniteLeaseDuration;
                     var lease = this.InstrumentClient(destBlob.GetLeaseClient(this.Recording.Random.NewGuid().ToString()));
                     var leaseResponse = await lease.AcquireAsync(duration);
 

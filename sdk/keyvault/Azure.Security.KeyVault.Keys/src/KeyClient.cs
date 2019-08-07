@@ -77,7 +77,19 @@ namespace Azure.Security.KeyVault.Keys
 
             var parameters = new KeyRequestParameters(keyType, keyOptions);
 
-            return SendRequest(RequestMethod.Post, parameters, () => new Key(name), cancellationToken, KeysPath, name, "/create");
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.CreateKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Post, parameters, () => new Key(name), cancellationToken, KeysPath, name, "/create");
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -99,7 +111,19 @@ namespace Azure.Security.KeyVault.Keys
 
             var parameters = new KeyRequestParameters(keyType, keyOptions);
 
-            return await SendRequestAsync(RequestMethod.Post, parameters, () => new Key(name), cancellationToken, KeysPath, name, "/create").ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.CreateKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Post, parameters, () => new Key(name), cancellationToken, KeysPath, name, "/create").ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -117,7 +141,19 @@ namespace Azure.Security.KeyVault.Keys
 
             var parameters = new KeyRequestParameters(ecKey);
 
-            return SendRequest(RequestMethod.Post, parameters, () => new Key(ecKey.Name), cancellationToken, KeysPath, ecKey.Name, "/create");
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.CreateEcKey");
+            scope.AddAttribute("key", ecKey.Name);
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Post, parameters, () => new Key(ecKey.Name), cancellationToken, KeysPath, ecKey.Name, "/create");
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -135,7 +171,19 @@ namespace Azure.Security.KeyVault.Keys
 
             var parameters = new KeyRequestParameters(ecKey);
 
-            return await SendRequestAsync(RequestMethod.Post, parameters, () => new Key(ecKey.Name), cancellationToken, KeysPath, ecKey.Name, "/create").ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.CreateEcKey");
+            scope.AddAttribute("key", ecKey.Name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Post, parameters, () => new Key(ecKey.Name), cancellationToken, KeysPath, ecKey.Name, "/create").ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -153,7 +201,19 @@ namespace Azure.Security.KeyVault.Keys
 
             var parameters = new KeyRequestParameters(rsaKey);
 
-            return SendRequest(RequestMethod.Post, parameters, () => new Key(rsaKey.Name), cancellationToken, KeysPath, rsaKey.Name, "/create");
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.CreateRsaKey");
+            scope.AddAttribute("key", rsaKey.Name);
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Post, parameters, () => new Key(rsaKey.Name), cancellationToken, KeysPath, rsaKey.Name, "/create");
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -171,7 +231,19 @@ namespace Azure.Security.KeyVault.Keys
 
             var parameters = new KeyRequestParameters(rsaKey);
 
-            return await SendRequestAsync(RequestMethod.Post, parameters, () => new Key(rsaKey.Name), cancellationToken, KeysPath, rsaKey.Name, "/create").ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.CreateRsaKey");
+            scope.AddAttribute("key", rsaKey.Name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Post, parameters, () => new Key(rsaKey.Name), cancellationToken, KeysPath, rsaKey.Name, "/create").ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -194,7 +266,19 @@ namespace Azure.Security.KeyVault.Keys
 
             var parameters = new KeyRequestParameters(key, keyOperations);
 
-            return SendRequest(RequestMethod.Patch, parameters, () => new Key(key.Name), cancellationToken, KeysPath, key.Name, "/", key.Version);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.UpdateKey");
+            scope.AddAttribute("key", key.Name);
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Patch, parameters, () => new Key(key.Name), cancellationToken, KeysPath, key.Name, "/", key.Version);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -217,7 +301,19 @@ namespace Azure.Security.KeyVault.Keys
 
             var parameters = new KeyRequestParameters(key, keyOperations);
 
-            return await SendRequestAsync(RequestMethod.Patch, parameters, () => new Key(key.Name), cancellationToken, KeysPath, key.Name, "/", key.Version).ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.UpdateKey");
+            scope.AddAttribute("key", key.Name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Patch, parameters, () => new Key(key.Name), cancellationToken, KeysPath, key.Name, "/", key.Version).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -235,7 +331,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            return SendRequest(RequestMethod.Get, () => new Key(name), cancellationToken, KeysPath, name, "/", version);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.GetKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Get, () => new Key(name), cancellationToken, KeysPath, name, "/", version);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -253,7 +361,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            return await SendRequestAsync(RequestMethod.Get, () => new Key(name), cancellationToken, KeysPath, name, "/", version).ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.GetKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Get, () => new Key(name), cancellationToken, KeysPath, name, "/", version).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -271,7 +391,7 @@ namespace Azure.Security.KeyVault.Keys
         {
             Uri firstPageUri = CreateFirstPageUri(KeysPath);
 
-            return PageResponseEnumerator.CreateEnumerable(nextLink => GetPage(firstPageUri, nextLink, () => new KeyBase(), cancellationToken));
+            return PageResponseEnumerator.CreateEnumerable(nextLink => GetPage(firstPageUri, nextLink, () => new KeyBase(), "Azure.Security.KeyVault.Keys.KeyClient.GetKeys", cancellationToken));
         }
 
         /// <summary>
@@ -285,11 +405,11 @@ namespace Azure.Security.KeyVault.Keys
         /// permission.
         /// </remarks>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> controlling the request lifetime.</param>
-        public virtual IAsyncEnumerable<Response<KeyBase>> GetKeysAsync(CancellationToken cancellationToken = default)
+        public virtual AsyncCollection<KeyBase> GetKeysAsync(CancellationToken cancellationToken = default)
         {
             Uri firstPageUri = CreateFirstPageUri(KeysPath);
 
-            return PageResponseEnumerator.CreateAsyncEnumerable(nextLink => GetPageAsync(firstPageUri, nextLink, () => new KeyBase(), cancellationToken));
+            return PageResponseEnumerator.CreateAsyncEnumerable(nextLink => GetPageAsync(firstPageUri, nextLink, () => new KeyBase(), "Azure.Security.KeyVault.Keys.KeyClient.GetKeys", cancellationToken));
         }
 
         /// <summary>
@@ -307,7 +427,7 @@ namespace Azure.Security.KeyVault.Keys
 
             Uri firstPageUri = CreateFirstPageUri($"{KeysPath}{name}/versions");
 
-            return PageResponseEnumerator.CreateEnumerable(nextLink => GetPage(firstPageUri, nextLink, () => new KeyBase(), cancellationToken));
+            return PageResponseEnumerator.CreateEnumerable(nextLink => GetPage(firstPageUri, nextLink, () => new KeyBase(), "Azure.Security.KeyVault.Keys.KeyClient.GetKeyVersions", cancellationToken));
         }
 
         /// <summary>
@@ -319,13 +439,13 @@ namespace Azure.Security.KeyVault.Keys
         /// </remarks>
         /// <param name="name">The name of the key.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> controlling the request lifetime.</param>
-        public virtual IAsyncEnumerable<Response<KeyBase>> GetKeyVersionsAsync(string name, CancellationToken cancellationToken = default)
+        public virtual AsyncCollection<KeyBase> GetKeyVersionsAsync(string name, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
             Uri firstPageUri = CreateFirstPageUri($"{KeysPath}{name}/versions");
 
-            return PageResponseEnumerator.CreateAsyncEnumerable(nextLink => GetPageAsync(firstPageUri, nextLink, () => new KeyBase(), cancellationToken));
+            return PageResponseEnumerator.CreateAsyncEnumerable(nextLink => GetPageAsync(firstPageUri, nextLink, () => new KeyBase(), "Azure.Security.KeyVault.Keys.KeyClient.GetKeyVersions", cancellationToken));
         }
 
         /// <summary>
@@ -343,7 +463,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            return SendRequest(RequestMethod.Get, () => new DeletedKey(name), cancellationToken, DeletedKeysPath, name);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.GetDeletedKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Get, () => new DeletedKey(name), cancellationToken, DeletedKeysPath, name);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -361,7 +493,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            return await SendRequestAsync(RequestMethod.Get, () => new DeletedKey(name), cancellationToken, DeletedKeysPath, name).ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.GetDeletedKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Get, () => new DeletedKey(name), cancellationToken, DeletedKeysPath, name).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -380,7 +524,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            return SendRequest(RequestMethod.Delete, () => new DeletedKey(name), cancellationToken, KeysPath, name);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.DeleteKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Delete, () => new DeletedKey(name), cancellationToken, KeysPath, name);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -399,7 +555,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            return await SendRequestAsync(RequestMethod.Delete, () => new DeletedKey(name), cancellationToken, KeysPath, name).ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.DeleteKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Delete, () => new DeletedKey(name), cancellationToken, KeysPath, name).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -418,7 +586,7 @@ namespace Azure.Security.KeyVault.Keys
         {
             Uri firstPageUri = CreateFirstPageUri(DeletedKeysPath);
 
-            return PageResponseEnumerator.CreateEnumerable(nextLink => GetPage(firstPageUri, nextLink, () => new DeletedKey(), cancellationToken));
+            return PageResponseEnumerator.CreateEnumerable(nextLink => GetPage(firstPageUri, nextLink, () => new DeletedKey(), "Azure.Security.KeyVault.Keys.KeyClient.GetDeletedKeys", cancellationToken));
         }
 
         /// <summary>
@@ -433,11 +601,11 @@ namespace Azure.Security.KeyVault.Keys
         /// vault. This operation requires the keys/list permission.
         /// </remarks>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> controlling the request lifetime.</param>
-        public virtual IAsyncEnumerable<Response<DeletedKey>> GetDeletedKeysAsync(CancellationToken cancellationToken = default)
+        public virtual AsyncCollection<DeletedKey> GetDeletedKeysAsync(CancellationToken cancellationToken = default)
         {
             Uri firstPageUri = CreateFirstPageUri(DeletedKeysPath);
 
-            return PageResponseEnumerator.CreateAsyncEnumerable(nextLink => GetPageAsync(firstPageUri, nextLink, () => new DeletedKey(), cancellationToken));
+            return PageResponseEnumerator.CreateAsyncEnumerable(nextLink => GetPageAsync(firstPageUri, nextLink, () => new DeletedKey(), "Azure.Security.KeyVault.Keys.KeyClient.GetDeletedKeys", cancellationToken));
         }
 
         /// <summary>
@@ -455,7 +623,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            return SendRequest(RequestMethod.Delete, cancellationToken, DeletedKeysPath, name);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.PurgeDeletedKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Delete, cancellationToken, DeletedKeysPath, name);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -473,7 +653,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            return await SendRequestAsync(RequestMethod.Delete, cancellationToken, DeletedKeysPath, name).ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.PurgeDeletedKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Delete, cancellationToken, DeletedKeysPath, name).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -492,7 +684,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            return SendRequest(RequestMethod.Post, () => new Key(name), cancellationToken, DeletedKeysPath, name, "/recover");
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.RecoverDeletedKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Post, () => new Key(name), cancellationToken, DeletedKeysPath, name, "/recover");
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -511,7 +715,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            return await SendRequestAsync(RequestMethod.Post, () => new Key(name), cancellationToken, DeletedKeysPath, name, "/recover").ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.RecoverDeletedKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Post, () => new Key(name), cancellationToken, DeletedKeysPath, name, "/recover").ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -538,9 +754,21 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            var backup = SendRequest(RequestMethod.Post, () => new KeyBackup(), cancellationToken, KeysPath, name, "/backup");
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.BackupKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
 
-            return new Response<byte[]>(backup.GetRawResponse(), backup.Value.Value);
+            try
+            {
+                var backup = SendRequest(RequestMethod.Post, () => new KeyBackup(), cancellationToken, KeysPath, name, "/backup");
+
+                return new Response<byte[]>(backup.GetRawResponse(), backup.Value.Value);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -567,9 +795,21 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"{nameof(name)} can't be empty or null");
 
-            var backup = await SendRequestAsync(RequestMethod.Post, () => new KeyBackup(), cancellationToken, KeysPath, name, "/backup").ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.BackupKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
 
-            return new Response<byte[]>(backup.GetRawResponse(), backup.Value.Value);
+            try
+            {
+                var backup = await SendRequestAsync(RequestMethod.Post, () => new KeyBackup(), cancellationToken, KeysPath, name, "/backup").ConfigureAwait(false);
+
+                return new Response<byte[]>(backup.GetRawResponse(), backup.Value.Value);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -596,7 +836,18 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (backup == null) throw new ArgumentNullException(nameof(backup));
 
-            return SendRequest(RequestMethod.Post, new KeyBackup { Value = backup }, () => new Key(), cancellationToken, KeysPath, "/restore");
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.RestoreKey");
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Post, new KeyBackup { Value = backup }, () => new Key(), cancellationToken, KeysPath, "/restore");
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -623,7 +874,18 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (backup == null) throw new ArgumentNullException(nameof(backup));
 
-            return await SendRequestAsync(RequestMethod.Post, new KeyBackup { Value = backup }, () => new Key(), cancellationToken, KeysPath, "/restore").ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.RestoreKey");
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Post, new KeyBackup { Value = backup }, () => new Key(), cancellationToken, KeysPath, "/restore").ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -645,7 +907,19 @@ namespace Azure.Security.KeyVault.Keys
 
             var keyImportOptions = new KeyImportOptions(name, keyMaterial);
 
-            return SendRequest(RequestMethod.Put, keyImportOptions, () => new Key(name), cancellationToken, KeysPath, name);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.ImportKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return SendRequest(RequestMethod.Put, keyImportOptions, () => new Key(name), cancellationToken, KeysPath, name);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -667,7 +941,19 @@ namespace Azure.Security.KeyVault.Keys
 
             var keyImportOptions = new KeyImportOptions(name, keyMaterial);
 
-            return await SendRequestAsync(RequestMethod.Put, keyImportOptions, () => new Key(name), cancellationToken, KeysPath, name).ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.ImportKey");
+            scope.AddAttribute("key", name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Put, keyImportOptions, () => new Key(name), cancellationToken, KeysPath, name).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -685,7 +971,20 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (keyImportOptions == default) throw new ArgumentNullException(nameof(keyImportOptions));
 
-            return SendRequest(RequestMethod.Put, keyImportOptions, () => new Key(keyImportOptions.Name), cancellationToken, KeysPath, keyImportOptions.Name);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.ImportKey");
+            scope.AddAttribute("key", keyImportOptions.Name);
+            scope.Start();
+
+            try
+            {
+
+                return SendRequest(RequestMethod.Put, keyImportOptions, () => new Key(keyImportOptions.Name), cancellationToken, KeysPath, keyImportOptions.Name);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         /// <summary>
@@ -703,7 +1002,19 @@ namespace Azure.Security.KeyVault.Keys
         {
             if (keyImportOptions == default) throw new ArgumentNullException(nameof(keyImportOptions));
 
-            return await SendRequestAsync(RequestMethod.Put, keyImportOptions, () => new Key(keyImportOptions.Name), cancellationToken, KeysPath, keyImportOptions.Name).ConfigureAwait(false);
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope("Azure.Security.KeyVault.Keys.KeyClient.ImportKey");
+            scope.AddAttribute("key", keyImportOptions.Name);
+            scope.Start();
+
+            try
+            {
+                return await SendRequestAsync(RequestMethod.Put, keyImportOptions, () => new Key(keyImportOptions.Name), cancellationToken, KeysPath, keyImportOptions.Name).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
         }
 
         public virtual async Task<CryptographyClient> GetCryptographyClientAysnc(string keyName, CancellationToken cancellationToken = default)
