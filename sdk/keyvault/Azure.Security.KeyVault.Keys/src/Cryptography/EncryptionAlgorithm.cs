@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
     /// <summary>
-    /// 
+    /// Describes the encryption algorithm
     /// </summary>
     public enum EncryptionAlgorithm
     {
         /// <summary>
-        /// 
+        /// RSA-OAEP
         /// </summary>
         RSAOAEP,
 
         /// <summary>
-        /// 
+        /// RSA-15
         /// </summary>
         RSA15,
 
         /// <summary>
-        /// /
+        /// RSA-OAEP256
         /// </summary>
         RSAOAEP256
     }

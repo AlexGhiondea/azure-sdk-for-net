@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
     /// <summary>
-    /// 
+    /// Represents information about a wrap operation
     /// </summary>
     public struct WrapResult : IJsonDeserializable
     {
@@ -16,17 +16,17 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         private const string EncryptedKeyPropertyName = "value";
 
         /// <summary>
-        /// 
+        /// /// The key used to wrap
         /// </summary>
         public string KeyId { get; private set; }
 
         /// <summary>
-        /// 
+        /// The wrapped key
         /// </summary>
         public byte[] EncryptedKey { get; private set; }
 
         /// <summary>
-        /// 
+        /// The algorithm used
         /// </summary>
         public KeyWrapAlgorithm Algorithm { get; internal set; }
 

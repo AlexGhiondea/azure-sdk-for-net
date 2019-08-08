@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
     /// <summary>
-    /// 
+    /// Options that allow to configure the management of the request sent to Key Vault
     /// </summary>
     public class CryptographyClientOptions : ClientOptions
     {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
     /// <summary>
-    /// 
+    /// Represents information about a sign operation
     /// </summary>
     public struct SignResult : IJsonDeserializable
     {
@@ -16,17 +16,17 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         private const string SignaturePropertyName = "value";
 
         /// <summary>
-        /// 
+        /// The key used to sign
         /// </summary>
         public string KeyId { get; private set; }
 
         /// <summary>
-        /// 
+        /// The signature
         /// </summary>
         public byte[] Signature { get; private set; }
 
         /// <summary>
-        /// 
+        /// The algorithm used to sign
         /// </summary>
         public SignatureAlgorithm Algorithm { get; internal set; }
 

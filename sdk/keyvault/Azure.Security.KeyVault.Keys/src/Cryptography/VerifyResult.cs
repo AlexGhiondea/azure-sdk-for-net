@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
     /// <summary>
-    /// 
+    /// Represents information about a verify operation
     /// </summary>
     public struct VerifyResult : IJsonDeserializable
     {
@@ -16,17 +16,17 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         private const string ValidPropertyName = "value";
 
         /// <summary>
-        /// 
+        /// The key used to verify
         /// </summary>
         public string KeyId { get; private set; }
 
         /// <summary>
-        /// 
+        /// The result of the verification
         /// </summary>
         public bool Valid { get; private set; }
 
         /// <summary>
-        /// 
+        /// The algorithm used
         /// </summary>
         public SignatureAlgorithm Algorithm { get; internal set; }
 

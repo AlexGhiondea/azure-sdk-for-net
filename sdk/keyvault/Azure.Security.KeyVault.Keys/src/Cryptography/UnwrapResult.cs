@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
     /// <summary>
-    /// 
+    /// Represents information about an unwrap operation
     /// </summary>
     public struct UnwrapResult : IJsonDeserializable
     {
@@ -16,17 +16,17 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         private const string KeyPropertyName = "value";
 
         /// <summary>
-        /// 
+        /// The key used to unwrap
         /// </summary>
         public string KeyId { get; private set; }
 
         /// <summary>
-        /// 
+        /// The unwrapped key
         /// </summary>
         public byte[] Key { get; private set; }
 
         /// <summary>
-        /// 
+        /// The algorithm used
         /// </summary>
         public KeyWrapAlgorithm Algorithm { get; internal set; }
 

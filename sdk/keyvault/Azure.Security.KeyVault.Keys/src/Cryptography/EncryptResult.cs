@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
     /// <summary>
-    /// 
+    /// Represents information about an encryption operation
     /// </summary>
     public struct EncryptResult : IJsonDeserializable
     {
@@ -19,32 +19,32 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         private const string AuthenticationTagPropertyName = "tag";
 
         /// <summary>
-        /// 
+        /// The key used to encrypt
         /// </summary>
         public string KeyId { get; internal set; }
 
         /// <summary>
-        /// 
+        /// The ciphertext that is the result of the encryption
         /// </summary>
         public byte[] Ciphertext { get; internal set; }
 
         /// <summary>
-        /// 
+        /// The initialization vector
         /// </summary>
         public byte[] Iv { get; internal set; }
 
         /// <summary>
-        /// 
+        /// The authentication data
         /// </summary>
         public byte[] AuthenticationData { get; internal set; }
 
         /// <summary>
-        /// 
+        /// The authentication tag
         /// </summary>
         public byte[] AuthenticationTag { get; internal set; }
 
         /// <summary>
-        /// 
+        /// The algorithm used for encryption
         /// </summary>
         public EncryptionAlgorithm Algorithm { get; internal set; }
 

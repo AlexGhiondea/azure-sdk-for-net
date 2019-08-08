@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
     /// <summary>
-    /// 
+    /// Represents information about an dencryption operation
     /// </summary>
     public struct DecryptResult : IJsonDeserializable
     {
@@ -16,17 +16,17 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         private const string PlaintextPropertyName = "value";
 
         /// <summary>
-        /// 
+        /// The KeyId used to decrypt
         /// </summary>
         public string KeyId { get; private set; }
 
         /// <summary>
-        /// 
+        /// The plaintext that is the result of the decryption
         /// </summary>
         public byte[] Plaintext { get; private set; }
 
         /// <summary>
-        /// 
+        /// The algorithm used for the decryption
         /// </summary>
         public EncryptionAlgorithm Algorithm { get; internal set; }
 
