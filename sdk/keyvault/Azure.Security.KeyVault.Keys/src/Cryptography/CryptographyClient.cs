@@ -1,10 +1,9 @@
 ﻿using Azure.Core;
+using Azure.Core.Http;
+using Azure.Core.Pipeline;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,17 +13,23 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
     /// <summary>
     /// 
     /// </summary>
-    public class CryptographicClient : IDisposable
+    public class CryptographyClient : ICryptographyProvider
     {
-        private SemaphoreSlim _initLock = new SemaphoreSlim(1, 1);
-        private JsonWebKey _key;
         private Uri _keyId;
-        private ICryptographyProvider _cryptoProvider;
+        private HttpPipeline _pipeline;
+        private readonly string ApiVersion;
+
+        private const string EncryptOperation = "encrypt";
+        private const string DecryptOperation = "decrypt";
+        private const string SignOperation = "sign";
+        private const string VerifyOperation = "verify";
+        private const string WrapOperation = "wrap";
+        private const string UnwrapOperation = "unwrap";
 
         /// <summary>
-        /// Protected cosntructor for mocking
+        /// 
         /// </summary>
-        protected CryptographicClient()
+        protected CryptographyClient()
         {
 
         }
@@ -34,7 +39,7 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         /// </summary>
         /// <param name="keyId"></param>
         /// <param name="credential"></param>
-        public CryptographicClient(Uri keyId, TokenCredential credential)
+        public CryptographyClient(Uri keyId, TokenCredential credential)
             : this(keyId, credential, null)
         {
 
@@ -46,32 +51,44 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         /// <param name="keyId"></param>
         /// <param name="credential"></param>
         /// <param name="options"></param>
-        public CryptographicClient(Uri keyId, TokenCredential credential, CryptographyClientOptions options)
+        public CryptographyClient(Uri keyId, TokenCredential credential, CryptographyClientOptions options)
         {
             _keyId = keyId ?? throw new ArgumentNullException(nameof(keyId));
 
-            _cryptoProvider = new RemoteCryptographyClient(keyId, credential);
+            options ??= new RemoteCryptographyClientOptions();
+
+            this.ApiVersion = options.GetVersionString();
+
+            _pipeline = HttpPipelineBuilder.Build(options,
+                    bufferResponse: true,
+                    new BearerTokenAuthenticationPolicy(credential, "https://vault.azure.net/.default"));
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="credential"></param>
-        public CryptographicClient(JsonWebKey key, TokenCredential credential)
-        {
-
-        }
+        public Uri KeyId => _keyId;
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="credential"></param>
-        /// <param name="options"></param>
-        public CryptographicClient(JsonWebKey key, TokenCredential credential, CryptographyClientOptions options)
+        /// <param name="algorithm"></param>
+        /// <param name="plaintext"></param>
+        /// <param name="iv"></param>
+        /// <param name="authenticationData"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<Response<EncryptResult>> EncryptAsync(EncryptionAlgorithm algorithm, byte[] plaintext, byte[] iv = default, byte[] authenticationData = default, CancellationToken cancellationToken = default)
         {
+            var parameters = new KeyEncryptParameters()
+            {
+                Algorithm = algorithm.GetName(),
+                Value = plaintext,
+                Iv = iv,
+                AuthenticationData = authenticationData
+            };
 
+            return await SendRequestAsync(EncryptOperation, parameters, () => new EncryptResult() { Algorithm = algorithm }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -83,23 +100,17 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         /// <param name="authenticationData"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<EncryptResult> EncryptAsync(EncryptionAlgorithm algorithm, byte[] plaintext, byte[] iv = default, byte[] authenticationData = default, CancellationToken cancellationToken = default)
+        public virtual Response<EncryptResult> Encrypt(EncryptionAlgorithm algorithm, byte[] plaintext, byte[] iv = default, byte[] authenticationData = default, CancellationToken cancellationToken = default)
         {
-            return await _cryptoProvider.EncryptAsync(algorithm, plaintext, iv, authenticationData, cancellationToken).ConfigureAwait(false);
-        }
+            var parameters = new KeyEncryptParameters()
+            {
+                Algorithm = algorithm.GetName(),
+                Value = plaintext,
+                Iv = iv,
+                AuthenticationData = authenticationData
+            };
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="plaintext"></param>
-        /// <param name="iv"></param>
-        /// <param name="authenticationData"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual EncryptResult Encrypt(EncryptionAlgorithm algorithm, byte[] plaintext, byte[] iv = default, byte[] authenticationData = default, CancellationToken cancellationToken = default)
-        {
-            return _cryptoProvider.Encrypt(algorithm, plaintext, iv, authenticationData, cancellationToken);
+            return SendRequest(EncryptOperation, parameters, () => new EncryptResult() { Algorithm = algorithm }, cancellationToken);
         }
 
         /// <summary>
@@ -112,9 +123,18 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         /// <param name="authenticationTag"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<DecryptResult> DecryptAsync(EncryptionAlgorithm algorithm, byte[] ciphertext, byte[] iv = default, byte[] authenticationData = default, byte[] authenticationTag = default, CancellationToken cancellationToken = default)
+        public virtual async Task<Response<DecryptResult>> DecryptAsync(EncryptionAlgorithm algorithm, byte[] ciphertext, byte[] iv = default, byte[] authenticationData = default, byte[] authenticationTag = default, CancellationToken cancellationToken = default)
         {
-            return await _cryptoProvider.DecryptAsync(algorithm, ciphertext, iv, authenticationData, authenticationTag, cancellationToken).ConfigureAwait(false);
+            var parameters = new KeyEncryptParameters()
+            {
+                Algorithm = algorithm.GetName(),
+                Value = ciphertext,
+                Iv = iv,
+                AuthenticationData = authenticationData,
+                AuthenticationTag = authenticationTag
+            };
+
+            return await SendRequestAsync(DecryptOperation, parameters, () => new DecryptResult() { Algorithm = algorithm }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -127,9 +147,18 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         /// <param name="authenticationTag"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual DecryptResult Decrypt(EncryptionAlgorithm algorithm, byte[] ciphertext, byte[] iv = default, byte[] authenticationData = default, byte[] authenticationTag = default, CancellationToken cancellationToken = default)
+        public virtual Response<DecryptResult> Decrypt(EncryptionAlgorithm algorithm, byte[] ciphertext, byte[] iv = default, byte[] authenticationData = default, byte[] authenticationTag = default, CancellationToken cancellationToken = default)
         {
-            return _cryptoProvider.Decrypt(algorithm, ciphertext, iv, authenticationData, authenticationTag, cancellationToken);
+            var parameters = new KeyEncryptParameters()
+            {
+                Algorithm = algorithm.GetName(),
+                Value = ciphertext,
+                Iv = iv,
+                AuthenticationData = authenticationData,
+                AuthenticationTag = authenticationTag
+            };
+
+            return SendRequest(DecryptOperation, parameters, () => new DecryptResult() { Algorithm = algorithm }, cancellationToken);
         }
 
         /// <summary>
@@ -139,9 +168,15 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         /// <param name="key"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<WrapResult> WrapKeyAsync(KeyWrapAlgorithm algorithm, byte[] key, CancellationToken cancellationToken = default)
+        public virtual async Task<Response<WrapResult>> WrapKeyAsync(KeyWrapAlgorithm algorithm, byte[] key, CancellationToken cancellationToken = default)
         {
-            return await _cryptoProvider.WrapKeyAsync(algorithm, key, cancellationToken).ConfigureAwait(false);
+            var parameters = new KeyWrapParameters()
+            {
+                Algorithm = algorithm.GetName(),
+                Key = key
+            };
+
+            return await SendRequestAsync(WrapOperation, parameters, () => new WrapResult() { Algorithm = algorithm }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -151,9 +186,15 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         /// <param name="key"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual WrapResult WrapKey(KeyWrapAlgorithm algorithm, byte[] key, CancellationToken cancellationToken = default)
+        public virtual Response<WrapResult> WrapKey(KeyWrapAlgorithm algorithm, byte[] key, CancellationToken cancellationToken = default)
         {
-            return _cryptoProvider.WrapKey(algorithm, key, cancellationToken);
+            var parameters = new KeyWrapParameters()
+            {
+                Algorithm = algorithm.GetName(),
+                Key = key
+            };
+
+            return SendRequest(WrapOperation, parameters, () => new WrapResult() { Algorithm = algorithm }, cancellationToken);
         }
 
         /// <summary>
@@ -163,9 +204,15 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         /// <param name="encryptedKey"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<UnwrapResult> UnwrapKeyAsync(KeyWrapAlgorithm algorithm, byte[] encryptedKey, CancellationToken cancellationToken = default)
+        public virtual async Task<Response<UnwrapResult>> UnwrapKeyAsync(KeyWrapAlgorithm algorithm, byte[] encryptedKey, CancellationToken cancellationToken = default)
         {
-            return await _cryptoProvider.UnwrapKeyAsync(algorithm, encryptedKey, cancellationToken).ConfigureAwait(false);
+            var parameters = new KeyWrapParameters()
+            {
+                Algorithm = algorithm.GetName(),
+                Key = encryptedKey
+            };
+
+            return await SendRequestAsync(UnwrapOperation, parameters, () => new UnwrapResult() { Algorithm = algorithm }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -175,221 +222,268 @@ namespace Azure.Security.KeyVault.Keys.Cryptography
         /// <param name="encryptedKey"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual UnwrapResult UnwrapKey(KeyWrapAlgorithm algorithm, byte[] encryptedKey, CancellationToken cancellationToken = default)
+        public virtual Response<UnwrapResult> UnwrapKey(KeyWrapAlgorithm algorithm, byte[] encryptedKey, CancellationToken cancellationToken = default)
         {
-            return _cryptoProvider.UnwrapKey(algorithm, encryptedKey, cancellationToken);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="digest"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual async Task<SignResult> SignAsync(SignatureAlgorithm algorithm, byte[] digest, CancellationToken cancellationToken = default)
-        {
-            return await _cryptoProvider.SignAsync(algorithm, digest, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="digest"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual SignResult Sign(SignatureAlgorithm algorithm, byte[] digest, CancellationToken cancellationToken = default)
-        {
-            return _cryptoProvider.Sign(algorithm, digest, cancellationToken);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="digest"></param>
-        /// <param name="signature"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual async Task<VerifyResult> VerifyAsync(SignatureAlgorithm algorithm, byte[] digest, byte[] signature, CancellationToken cancellationToken = default)
-        {
-            return await _cryptoProvider.VerifyAsync(algorithm, digest, signature, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="digest"></param>
-        /// <param name="signature"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual VerifyResult Verify(SignatureAlgorithm algorithm, byte[] digest, byte[] signature, CancellationToken cancellationToken = default)
-        {
-            return _cryptoProvider.Verify(algorithm, digest, signature, cancellationToken);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="data"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual async Task<SignResult> SignDataAsync(SignatureAlgorithm algorithm, byte[] data, CancellationToken cancellationToken = default)
-        {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            byte[] digest = CreateDigest(algorithm, data);
-
-            return await _cryptoProvider.SignAsync(algorithm, digest, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="data"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual SignResult SignData(SignatureAlgorithm algorithm, byte[] data, CancellationToken cancellationToken = default)
-        {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            byte[] digest = CreateDigest(algorithm, data);
-
-            return _cryptoProvider.Sign(algorithm, digest, cancellationToken);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="data"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual async Task<SignResult> SignDataAsync(SignatureAlgorithm algorithm, Stream data, CancellationToken cancellationToken = default)
-        {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            byte[] digest = CreateDigest(algorithm, data);
-
-            return await _cryptoProvider.SignAsync(algorithm, digest, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="data"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual SignResult SignData(SignatureAlgorithm algorithm, Stream data, CancellationToken cancellationToken = default)
-        {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            byte[] digest = CreateDigest(algorithm, data);
-
-            return _cryptoProvider.Sign(algorithm, digest, cancellationToken);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="data"></param>
-        /// <param name="signature"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual async Task<VerifyResult> VerifyDataAsync(SignatureAlgorithm algorithm, byte[] data, byte[] signature, CancellationToken cancellationToken = default)
-        {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            byte[] digest = CreateDigest(algorithm, data);
-
-            return await _cryptoProvider.VerifyAsync(algorithm, digest, signature, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="data"></param>
-        /// <param name="signature"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual VerifyResult VerifyData(SignatureAlgorithm algorithm, byte[] data, byte[] signature, CancellationToken cancellationToken = default)
-        {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            byte[] digest = CreateDigest(algorithm, data);
-
-            return _cryptoProvider.Verify(algorithm, digest, signature, cancellationToken);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="data"></param>
-        /// <param name="signature"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual async Task<VerifyResult> VerifyDataAsync(SignatureAlgorithm algorithm, Stream data, byte[] signature, CancellationToken cancellationToken = default)
-        {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            byte[] digest = CreateDigest(algorithm, data);
-
-            return await _cryptoProvider.VerifyAsync(algorithm, digest, signature, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="data"></param>
-        /// <param name="signature"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual VerifyResult VerifyData(SignatureAlgorithm algorithm, Stream data, byte[] signature, CancellationToken cancellationToken = default)
-        {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            byte[] digest = CreateDigest(algorithm, data);
-
-            return _cryptoProvider.Verify(algorithm, digest, signature, cancellationToken);
-        }
-
-        /// <summary>
-        /// Disposes the CryptographicKey
-        /// </summary>
-        public void Dispose()
-        {
-            if (_initLock != null)
+            var parameters = new KeyWrapParameters()
             {
-                _initLock.Dispose();
+                Algorithm = algorithm.GetName(),
+                Key = encryptedKey
+            };
+
+            return SendRequest(UnwrapOperation, parameters, () => new UnwrapResult() { Algorithm = algorithm }, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="algorithm"></param>
+        /// <param name="digest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<Response<SignResult>> SignAsync(SignatureAlgorithm algorithm, byte[] digest, CancellationToken cancellationToken = default)
+        {
+            var parameters = new KeySignParameters
+            {
+                Algorithm = algorithm.GetName(),
+                Digest = digest
+            };
+
+            return await SendRequestAsync(SignOperation, parameters, () => new SignResult() { Algorithm = algorithm }, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="algorithm"></param>
+        /// <param name="digest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual Response<SignResult> Sign(SignatureAlgorithm algorithm, byte[] digest, CancellationToken cancellationToken = default)
+        {
+            var parameters = new KeySignParameters
+            {
+                Algorithm = algorithm.GetName(),
+                Digest = digest
+            };
+
+            return SendRequest(SignOperation, parameters, () => new SignResult() { Algorithm = algorithm }, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="algorithm"></param>
+        /// <param name="digest"></param>
+        /// <param name="signature"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<Response<VerifyResult>> VerifyAsync(SignatureAlgorithm algorithm, byte[] digest, byte[] signature, CancellationToken cancellationToken = default)
+        {
+            var parameters = new KeyVerifyParameters
+            {
+                Algorithm = algorithm.GetName(),
+                Digest = digest,
+                Signature = signature
+            };
+
+            return await SendRequestAsync(VerifyOperation, parameters, () => new VerifyResult() { Algorithm = algorithm }, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="algorithm"></param>
+        /// <param name="digest"></param>
+        /// <param name="signature"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual Response<VerifyResult> Verify(SignatureAlgorithm algorithm, byte[] digest, byte[] signature, CancellationToken cancellationToken = default)
+        {
+            var parameters = new KeyVerifyParameters
+            {
+                Algorithm = algorithm.GetName(),
+                Digest = digest,
+                Signature = signature
+            };
+
+            return SendRequest(VerifyOperation, parameters, () => new VerifyResult() { Algorithm = algorithm }, cancellationToken);
+        }
+
+        private async Task<Response<TResult>> SendRequestAsync<TContent, TResult>(string operation, TContent content, Func<TResult> resultFactory, CancellationToken cancellationToken)
+            where TContent : IJsonSerializable
+            where TResult : IJsonDeserializable
+        {
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope($"Azure.Security.KeyVault.Keys.Cryptography.RemoteCryptographyClient.{operation}");
+            scope.AddAttribute("key", _keyId.ToString());
+            scope.Start();
+
+            try
+            {
+                using (Request request = CreateRequest(operation))
+                {
+                    request.Content = HttpPipelineRequestContent.Create(content.Serialize());
+
+                    Response response = await SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    return this.CreateResponse(response, resultFactory());
+                }
             }
-
-            GC.SuppressFinalize(this);
-        }
-
-        private byte[] CreateDigest(SignatureAlgorithm algorithm, byte[] data)
-        {
-            using(HashAlgorithm hashAlgo = algorithm.GetHashAlgorithm())
+            catch (Exception e)
             {
-                return hashAlgo.ComputeHash(data);
+                scope.Failed(e);
+                throw;
             }
         }
 
-        private byte[] CreateDigest(SignatureAlgorithm algorithm, Stream data)
+        private async Task<Response> SendRequestAsync(Request request, CancellationToken cancellationToken)
         {
-            using (HashAlgorithm hashAlgo = algorithm.GetHashAlgorithm())
+            Response response = await _pipeline.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+            switch (response.Status)
             {
-                return hashAlgo.ComputeHash(data);
+                case 200:
+                case 201:
+                case 204:
+                    return response;
+                default:
+                    throw await response.CreateRequestFailedExceptionAsync().ConfigureAwait(false);
             }
         }
 
+        private Response<TResult> SendRequest<TContent, TResult>(string operation, TContent content, Func<TResult> resultFactory, CancellationToken cancellationToken, params string[] path)
+            where TContent : IJsonSerializable
+            where TResult : IJsonDeserializable
+        {
+            using DiagnosticScope scope = _pipeline.Diagnostics.CreateScope($"Azure.Security.KeyVault.Keys.Cryptography.RemoteCryptographyClient.{operation}");
+            scope.AddAttribute("key", _keyId.ToString());
+            scope.Start();
+
+            try
+            {
+                using (Request request = CreateRequest(operation))
+                {
+                    request.Content = HttpPipelineRequestContent.Create(content.Serialize());
+
+                    Response response = SendRequest(request, cancellationToken);
+
+                    return CreateResponse(response, resultFactory());
+                }
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
+        }
+
+        private Response SendRequest(Request request, CancellationToken cancellationToken)
+        {
+            var response = _pipeline.SendRequest(request, cancellationToken);
+
+            switch (response.Status)
+            {
+                case 200:
+                case 201:
+                case 204:
+                    return response;
+                default:
+                    throw response.CreateRequestFailedException();
+            }
+        }
+
+        private Request CreateRequest(string operation)
+        {
+            Request request = _pipeline.CreateRequest();
+
+            request.Headers.Add(HttpHeader.Common.JsonContentType);
+            request.Headers.Add(HttpHeader.Common.JsonAccept);
+            request.Method = RequestMethod.Post;
+            request.UriBuilder.Uri = _keyId;
+            request.UriBuilder.AppendPath(operation);
+
+            request.UriBuilder.AppendQuery("api-version", ApiVersion);
+
+            return request;
+        }
+
+        private Request CreateRequest(RequestMethod method, Uri uri)
+        {
+            Request request = _pipeline.CreateRequest();
+
+            request.Headers.Add(HttpHeader.Common.JsonContentType);
+            request.Headers.Add(HttpHeader.Common.JsonAccept);
+            request.Method = method;
+            request.UriBuilder.Uri = uri;
+
+            return request;
+        }
+
+        private Response<T> CreateResponse<T>(Response response, T result)
+            where T : IJsonDeserializable
+        {
+            result.Deserialize(response.ContentStream);
+
+            return new Response<T>(response, result);
+        }
+
+        async Task<EncryptResult> ICryptographyProvider.EncryptAsync(EncryptionAlgorithm algorithm, byte[] plaintext, byte[] iv, byte[] authenticationData, CancellationToken cancellationToken)
+        {
+            return await ((CryptographyClient)this).EncryptAsync(algorithm, plaintext, iv, authenticationData, cancellationToken).ConfigureAwait(false);
+        }
+
+        EncryptResult ICryptographyProvider.Encrypt(EncryptionAlgorithm algorithm, byte[] plaintext, byte[] iv, byte[] authenticationData, CancellationToken cancellationToken)
+        {
+            return ((CryptographyClient)this).Encrypt(algorithm, plaintext, iv, authenticationData, cancellationToken);
+        }
+
+        async Task<DecryptResult> ICryptographyProvider.DecryptAsync(EncryptionAlgorithm algorithm, byte[] ciphertext, byte[] iv, byte[] authenticationData, byte[] authenticationTag, CancellationToken cancellationToken)
+        {
+            return await ((CryptographyClient)this).DecryptAsync(algorithm, ciphertext, iv, authenticationData, authenticationTag, cancellationToken).ConfigureAwait(false);
+        }
+
+        DecryptResult ICryptographyProvider.Decrypt(EncryptionAlgorithm algorithm, byte[] ciphertext, byte[] iv, byte[] authenticationData, byte[] authenticationTag, CancellationToken cancellationToken)
+        {
+            return ((CryptographyClient)this).Decrypt(algorithm, ciphertext, iv, authenticationData, authenticationTag, cancellationToken);
+        }
+
+        async Task<WrapResult> ICryptographyProvider.WrapKeyAsync(KeyWrapAlgorithm algorithm, byte[] key, CancellationToken cancellationToken)
+        {
+            return await ((CryptographyClient)this).WrapKeyAsync(algorithm, key, cancellationToken).ConfigureAwait(false);
+        }
+
+        WrapResult ICryptographyProvider.WrapKey(KeyWrapAlgorithm algorithm, byte[] key, CancellationToken cancellationToken)
+        {
+            return ((CryptographyClient)this).WrapKey(algorithm, key, cancellationToken);
+        }
+
+        async Task<UnwrapResult> ICryptographyProvider.UnwrapKeyAsync(KeyWrapAlgorithm algorithm, byte[] encryptedKey, CancellationToken cancellationToken)
+        {
+            return await ((CryptographyClient)this).UnwrapKeyAsync(algorithm, encryptedKey, cancellationToken).ConfigureAwait(false);
+        }
+
+        UnwrapResult ICryptographyProvider.UnwrapKey(KeyWrapAlgorithm algorithm, byte[] encryptedKey, CancellationToken cancellationToken)
+        {
+            return ((CryptographyClient)this).UnwrapKey(algorithm, encryptedKey, cancellationToken);
+        }
+
+        async Task<SignResult> ICryptographyProvider.SignAsync(SignatureAlgorithm algorithm, byte[] digest, CancellationToken cancellationToken)
+        {
+            return await ((CryptographyClient)this).SignAsync(algorithm, digest, cancellationToken).ConfigureAwait(false);
+        }
+
+        SignResult ICryptographyProvider.Sign(SignatureAlgorithm algorithm, byte[] digest, CancellationToken cancellationToken)
+        {
+            return ((CryptographyClient)this).Sign(algorithm, digest, cancellationToken);
+        }
+
+        async Task<VerifyResult> ICryptographyProvider.VerifyAsync(SignatureAlgorithm algorithm, byte[] digest, byte[] signature, CancellationToken cancellationToken)
+        {
+            return await ((CryptographyClient)this).VerifyAsync(algorithm, digest, signature, cancellationToken).ConfigureAwait(false);
+        }
+
+        VerifyResult ICryptographyProvider.Verify(SignatureAlgorithm algorithm, byte[] digest, byte[] signature, CancellationToken cancellationToken)
+        {
+            return ((CryptographyClient)this).Verify(algorithm, digest, signature, cancellationToken);
+        }
     }
 }

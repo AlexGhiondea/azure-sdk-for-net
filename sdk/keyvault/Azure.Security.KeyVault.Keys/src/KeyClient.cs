@@ -7,6 +7,7 @@ using Azure.Core.Pipeline;
 using Azure.Security.KeyVault.Keys.Cryptography;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,7 +28,7 @@ namespace Azure.Security.KeyVault.Keys
         /// </summary>
         protected KeyClient()
         {
-
+            using(FileStream plaintextFile = File.OpenRead(plaintext.)
         }
 
         /// <summary>
@@ -1017,12 +1018,12 @@ namespace Azure.Security.KeyVault.Keys
             }
         }
 
-        public virtual async Task<CryptographicClient> GetCryptographyClientAysnc(string keyName, CancellationToken cancellationToken = default)
+        public virtual async Task<CryptographicKey> GetCryptographicKeyAysnc(string keyName, string version = null, CancellationToken cancellationToken = default)
         {
 
         }
 
-        public virtual CryptographicClient GetCryptographyClient(string keyName, CancellationToken cancellationToken = default)
+        public virtual CryptographicKey GetCryptographicKey(string keyName, string version = null, CancellationToken cancellationToken = default)
         {
 
         }
