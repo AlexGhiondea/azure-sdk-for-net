@@ -6,10 +6,24 @@ using System.Threading.Tasks;
 
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum KeyWrapAlgorithm
     {
+        /// <summary>
+        /// 
+        /// </summary>
         RSAOAEP,
+
+        /// <summary>
+        /// 
+        /// </summary>
         RSA15,
+
+        /// <summary>
+        /// 
+        /// </summary>
         RSAOAEP256
     }
 

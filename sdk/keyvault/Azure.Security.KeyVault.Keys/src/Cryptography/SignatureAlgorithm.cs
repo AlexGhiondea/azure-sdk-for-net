@@ -7,17 +7,59 @@ using System.Threading.Tasks;
 
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum SignatureAlgorithm
     {
+        /// <summary>
+        /// 
+        /// </summary>
         RS256,
+
+        /// <summary>
+        /// 
+        /// </summary>
         RS384,
+
+        /// <summary>
+        /// 
+        /// </summary>
         RS512,
+
+        /// <summary>
+        /// 
+        /// </summary>
         PS256,
+
+        /// <summary>
+        /// 
+        /// </summary>
         PS384,
+
+        /// <summary>
+        /// 
+        /// </summary>
         PS512,
+
+        /// <summary>
+        /// 
+        /// </summary>
         ES256,
+
+        /// <summary>
+        /// 
+        /// </summary>
         ES384,
+
+        /// <summary>
+        /// 
+        /// </summary>
         ES512,
+
+        /// <summary>
+        /// 
+        /// </summary>
         ES256K
     }
 

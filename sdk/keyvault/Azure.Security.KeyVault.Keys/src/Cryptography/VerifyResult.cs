@@ -7,15 +7,27 @@ using System.Threading.Tasks;
 
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public struct VerifyResult : IJsonDeserializable
     {
         private const string KeyIdPropertyName = "kid";
         private const string ValidPropertyName = "value";
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string KeyId { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool Valid { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public SignatureAlgorithm Algorithm { get; internal set; }
 
         void IJsonDeserializable.ReadProperties(JsonElement json)

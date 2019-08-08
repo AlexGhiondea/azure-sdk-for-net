@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Azure.Security.KeyVault.Keys.Cryptography
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class CryptographyClientOptions : ClientOptions
     {
         /// <summary>

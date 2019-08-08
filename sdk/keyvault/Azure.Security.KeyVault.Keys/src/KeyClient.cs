@@ -28,7 +28,6 @@ namespace Azure.Security.KeyVault.Keys
         /// </summary>
         protected KeyClient()
         {
-            using(FileStream plaintextFile = File.OpenRead(plaintext.)
         }
 
         /// <summary>
@@ -1016,16 +1015,6 @@ namespace Azure.Security.KeyVault.Keys
                 scope.Failed(e);
                 throw;
             }
-        }
-
-        public virtual async Task<CryptographicKey> GetCryptographicKeyAysnc(string keyName, string version = null, CancellationToken cancellationToken = default)
-        {
-
-        }
-
-        public virtual CryptographicKey GetCryptographicKey(string keyName, string version = null, CancellationToken cancellationToken = default)
-        {
-
         }
     }
 }
